@@ -261,7 +261,7 @@ class WithSimNIC extends OverrideIOBinder({
 // accessible to the IOBinder
 // DOC include start: WithSimAXIMem
 class WithSimAXIMem extends OverrideIOBinder({
-  (system: CanHaveMasterAXI4MemPort with BaseSubsystem) => {
+  (system: CanHaveMasterAXI4MemPortMaxFlight1 with BaseSubsystem) => {
     val peiTuples = AddIOCells.axi4(system.mem_axi4, system.memAXI4Node)
     // TODO: we are inlining the connectMem method of SimAXIMem because
     //   it takes in a dut rather than seq of axi4 ports
@@ -279,7 +279,7 @@ class WithSimAXIMem extends OverrideIOBinder({
 // DOC include end: WithSimAXIMem
 
 class WithBlackBoxSimMem extends OverrideIOBinder({
-  (system: CanHaveMasterAXI4MemPort with BaseSubsystem) => {
+  (system: CanHaveMasterAXI4MemPortMaxFlight1 with BaseSubsystem) => {
     val peiTuples = AddIOCells.axi4(system.mem_axi4, system.memAXI4Node)
     val harnessFn = (th: chipyard.TestHarness) => {
       peiTuples.map { case (port, edge, ios) =>

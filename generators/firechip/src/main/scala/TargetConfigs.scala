@@ -65,6 +65,7 @@ class WithScalaTestFeatures extends Config((site, here, up) => {
 // which requires that all config classes be defined in the same package
 class DDR3FRFCFS extends FRFCFS16GBQuadRank
 class DDR3FRFCFSLLC4MB extends FRFCFS16GBQuadRankLLC4MB
+class DDR3FRFCFSLLCMaxSetb17MaxWayb1 extends FRFCFS16GBQuadRankLLCMaxSetb17MaxWayb1
 
 class WithNIC extends icenet.WithIceNIC(inBufFlits = 8192, ctrlQueueDepth = 64)
 
@@ -78,7 +79,7 @@ class WithFireSimConfigTweaks extends Config(
   // Required*: When using FireSim-as-top to provide a correct path to the target bootrom source
   new WithBootROM ++
   // Optional*: Removing this will require target-software changes to properly capture UART output
-  new WithPeripheryBusFrequency(BigInt(3200000000L)) ++
+  new WithPeripheryBusFrequency(BigInt(2000000000L)) ++
   // Required: Existing FAME-1 transform cannot handle black-box clock gates
   new WithoutClockGating ++
   // Required*: Removes thousands of assertions that would be synthesized (* pending PriorityMux bugfix)
@@ -178,3 +179,16 @@ class FireSimArianeConfig extends Config(
   new WithDefaultMemModel ++
   new WithFireSimConfigTweaks ++
   new chipyard.ArianeConfig)
+
+class FireSimProtoSerMegaBoomConfig extends Config(
+  new WithDefaultFireSimBridges ++
+  new WithDefaultMemModel ++
+  new WithFireSimConfigTweaks ++
+  new chipyard.ProtoSerMegaBoomConfig)
+
+class FireSimProtoDeserMegaBoomConfig extends Config(
+  new WithDefaultFireSimBridges ++
+  new WithDefaultMemModel ++
+  new WithFireSimConfigTweaks ++
+  new chipyard.ProtoDeserMegaBoomConfig)
+

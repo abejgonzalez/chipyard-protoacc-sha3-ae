@@ -27,7 +27,7 @@ import ariane.ArianeTile
 import boom.common.{BoomTile}
 
 import chipyard.iobinders.{IOBinders, OverrideIOBinder, ComposeIOBinder}
-import chipyard.{HasChipyardTilesModuleImp}
+import chipyard.{HasChipyardTilesModuleImp, CanHaveMasterAXI4MemPortMaxFlight1}
 import testchipip.{CanHaveTraceIOModuleImp}
 
 object MainMemoryConsts {
@@ -57,7 +57,7 @@ class WithBlockDeviceBridge extends OverrideIOBinder({
 
 
 class WithFASEDBridge extends OverrideIOBinder({
-  (system: CanHaveMasterAXI4MemPort with BaseSubsystem) => {
+  (system: CanHaveMasterAXI4MemPortMaxFlight1 with BaseSubsystem) => {
     implicit val p = system.p
     (system.mem_axi4 zip system.memAXI4Node.in).foreach({ case (axi4, (_, edge)) =>
       val nastiKey = NastiParameters(axi4.r.bits.data.getWidth,

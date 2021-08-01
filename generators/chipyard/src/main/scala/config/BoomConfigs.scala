@@ -1,6 +1,7 @@
 package chipyard
 
 import freechips.rocketchip.config.{Config}
+import freechips.rocketchip.subsystem._
 
 // ---------------------
 // BOOM Configs
@@ -81,6 +82,40 @@ class MegaBoomConfig extends Config(
   new boom.common.WithNBoomCores(1) ++
   new freechips.rocketchip.subsystem.WithCoherentBusTopology ++
   new freechips.rocketchip.system.BaseConfig)
+
+class WithExtMemIdBits(n: Int) extends Config((site, here, up) => {
+  case ExtMem => up(ExtMem, site).map(x => x.copy(master = x.master.copy(idBits = n)))
+})
+
+class ProtoMegaBoomBaseConfigNoAccel extends Config(
+  new chipyard.iobinders.WithUARTAdapter ++
+  new chipyard.iobinders.WithTieOffInterrupts ++
+  new chipyard.iobinders.WithBlackBoxSimMem ++
+  new chipyard.iobinders.WithTiedOffDebug ++
+  new chipyard.iobinders.WithSimSerial ++
+  new testchipip.WithTSI ++
+  new chipyard.config.WithBootROM ++
+  new chipyard.config.WithUART ++
+  new chipyard.config.WithL2TLBs(1024) ++
+  new freechips.rocketchip.subsystem.WithNoMMIOPort ++
+  new freechips.rocketchip.subsystem.WithNoSlavePort ++
+  new freechips.rocketchip.subsystem.WithInclusiveCache(nBanks=8, nWays=16, capacityKB=2048) ++
+  new WithExtMemIdBits(7) ++
+  new freechips.rocketchip.subsystem.WithNMemoryChannels(4) ++
+  new freechips.rocketchip.subsystem.WithNExtTopInterrupts(0) ++
+  new boom.common.WithBoomCommitLogPrintf ++
+  new boom.common.WithMegaBooms ++                              // mega boom config
+  new boom.common.WithNBoomCores(1) ++
+  new freechips.rocketchip.subsystem.WithCoherentBusTopology ++
+  new freechips.rocketchip.system.BaseConfig)
+
+class ProtoSerMegaBoomConfig extends Config(
+  new protoacc.WithProtoAccelSerOnly ++
+  new ProtoMegaBoomBaseConfigNoAccel)
+
+class ProtoDeserMegaBoomConfig extends Config(
+  new protoacc.WithProtoAccelDeserOnly ++
+  new ProtoMegaBoomBaseConfigNoAccel)
 
 class DualSmallBoomConfig extends Config(
   new chipyard.iobinders.WithUARTAdapter ++
