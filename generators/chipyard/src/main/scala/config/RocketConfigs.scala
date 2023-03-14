@@ -1,17 +1,19 @@
 package chipyard
 
 import freechips.rocketchip.config.{Config}
+import freechips.rocketchip.subsystem._
 
 // --------------
 // Rocket Configs
 // --------------
 
-class RocketConfig extends Config(
+class AbstractConfig extends Config(
   new chipyard.iobinders.WithUARTAdapter ++                      // display UART with a SimUARTAdapter
   new chipyard.iobinders.WithTieOffInterrupts ++                 // tie off top-level interrupts
   new chipyard.iobinders.WithBlackBoxSimMem ++                   // drive the master AXI4 memory with a blackbox DRAMSim model
   new chipyard.iobinders.WithTiedOffDebug ++                     // tie off debug (since we are using SimSerial for testing)
   new chipyard.iobinders.WithSimSerial ++                        // drive TSI with SimSerial for testing
+
   new testchipip.WithTSI ++                                      // use testchipip serial offchip link
   new chipyard.config.WithBootROM ++                             // use default bootrom
   new chipyard.config.WithUART ++                                // add a UART
@@ -20,9 +22,14 @@ class RocketConfig extends Config(
   new freechips.rocketchip.subsystem.WithNoSlavePort ++          // no top-level MMIO slave port (overrides default set in rocketchip)
   new freechips.rocketchip.subsystem.WithInclusiveCache ++       // use Sifive L2 cache
   new freechips.rocketchip.subsystem.WithNExtTopInterrupts(0) ++ // no external interrupts
-  new freechips.rocketchip.subsystem.WithNBigCores(1) ++         // single rocket-core
   new freechips.rocketchip.subsystem.WithCoherentBusTopology ++  // hierarchical buses including mbus+l2
   new freechips.rocketchip.system.BaseConfig)                    // "base" rocketchip system
+
+
+
+class RocketConfig extends Config(
+  new freechips.rocketchip.subsystem.WithNBigCores(1) ++         // single rocket-core
+  new chipyard.AbstractConfig)                    // "base" rocketchip system
 
 class HwachaRocketConfig extends Config(
   new chipyard.iobinders.WithUARTAdapter ++
@@ -542,3 +549,67 @@ class LargeNVDLARocketConfig extends Config(
   new freechips.rocketchip.subsystem.WithNBigCores(1) ++
   new freechips.rocketchip.subsystem.WithCoherentBusTopology ++
   new freechips.rocketchip.system.BaseConfig)
+
+// ----------------
+
+class x3RocketConfig extends Config(
+  new freechips.rocketchip.subsystem.WithNBigCores(3) ++         // single rocket-core
+  new chipyard.AbstractConfig)                    // "base" rocketchip system
+
+class HyperscaleRocketBaseConfig extends Config(
+  new freechips.rocketchip.subsystem.WithInclusiveCache(nBanks=8, nWays=16, capacityKB=2048) ++
+  new WithExtMemIdBits(7) ++
+  new freechips.rocketchip.subsystem.WithNMemoryChannels(4) ++
+  new Config ((site, here, up) => {
+    case SystemBusKey => up(SystemBusKey, site).copy(beatBytes = 32)
+  }) ++
+  new RocketConfig)
+
+class Hyperscalex3RocketBaseConfig extends Config(
+  new freechips.rocketchip.subsystem.WithInclusiveCache(nBanks=8, nWays=16, capacityKB=2048) ++
+  new WithExtMemIdBits(7) ++
+  new freechips.rocketchip.subsystem.WithNMemoryChannels(4) ++
+  new Config ((site, here, up) => {
+    case SystemBusKey => up(SystemBusKey, site).copy(beatBytes = 32)
+  }) ++
+  new x3RocketConfig)
+
+class ProtoRocketConfig extends Config(
+  new chipyard.config.WithMultiRoCC ++
+  new chipyard.config.WithMultiRoCCProtoAccelSerOnly(0) ++
+  new HyperscaleRocketBaseConfig)
+
+class ProtoShax3RocketConfig extends Config(
+  new chipyard.config.WithMultiRoCC ++
+  new chipyard.config.WithMultiRoCCSha3Accel(1) ++
+  new chipyard.config.WithMultiRoCCProtoAccelSerOnly(0) ++
+  new Hyperscalex3RocketBaseConfig)
+
+class ISCAHyperscaleRocketBaseConfig extends Config(
+  new freechips.rocketchip.subsystem.WithInclusiveCache(nBanks=8, nWays=16, capacityKB=2048) ++
+  new WithExtMemIdBits(7) ++
+  new freechips.rocketchip.subsystem.WithNMemoryChannels(4) ++
+  new Config ((site, here, up) => {
+    case SystemBusKey => up(SystemBusKey, site).copy(beatBytes = 16)
+  }) ++
+  new RocketConfig)
+
+class ISCAHyperscalex3RocketBaseConfig extends Config(
+  new freechips.rocketchip.subsystem.WithInclusiveCache(nBanks=8, nWays=16, capacityKB=2048) ++
+  new WithExtMemIdBits(7) ++
+  new freechips.rocketchip.subsystem.WithNMemoryChannels(4) ++
+  new Config ((site, here, up) => {
+    case SystemBusKey => up(SystemBusKey, site).copy(beatBytes = 16)
+  }) ++
+  new x3RocketConfig)
+
+class ISCAProtoRocketConfig extends Config(
+  new chipyard.config.WithMultiRoCC ++
+  new chipyard.config.WithMultiRoCCProtoAccelSerOnly(0) ++
+  new ISCAHyperscaleRocketBaseConfig)
+
+class ISCAProtoShax3RocketConfig extends Config(
+  new chipyard.config.WithMultiRoCC ++
+  new chipyard.config.WithMultiRoCCSha3Accel(1) ++
+  new chipyard.config.WithMultiRoCCProtoAccelSerOnly(0) ++
+  new ISCAHyperscalex3RocketBaseConfig)

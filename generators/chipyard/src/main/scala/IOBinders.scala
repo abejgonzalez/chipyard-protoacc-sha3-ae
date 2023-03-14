@@ -185,9 +185,9 @@ object AddIOCells {
   }
 
   def axi4(io: Seq[AXI4Bundle], node: AXI4SlaveNode): Seq[(AXI4Bundle, AXI4EdgeParameters, Seq[IOCell])] = {
-    io.zip(node.in).map{ case (mem_axi4, (_, edge)) => {
+    io.zip(node.in).zipWithIndex.map{ case ((mem_axi4, (_, edge)), count) => {
       val (port, ios) = IOCell.generateIOFromSignal(mem_axi4, Some("iocell_mem_axi4"))
-      port.suggestName("mem_axi4")
+      port.suggestName(s"mem_axi4_{count}")
       (port, edge, ios)
     }}
   }

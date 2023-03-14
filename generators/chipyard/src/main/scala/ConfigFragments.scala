@@ -8,8 +8,8 @@ import freechips.rocketchip.subsystem.{SystemBusKey, RocketTilesKey, WithRoccExa
 import freechips.rocketchip.diplomacy.{LazyModule, ValName}
 import freechips.rocketchip.devices.tilelink.BootROMParams
 import freechips.rocketchip.devices.debug.{Debug}
-import freechips.rocketchip.tile.{XLen, BuildRoCC, TileKey, LazyRoCC, RocketTileParams, MaxHartIdBits}
-import freechips.rocketchip.rocket.{RocketCoreParams, MulDivParams, DCacheParams, ICacheParams}
+import freechips.rocketchip.tile.{OpcodeSet, XLen, BuildRoCC, TileKey, LazyRoCC, RocketTileParams, MaxHartIdBits}
+import freechips.rocketchip.rocket.{RocketCoreParams, MulDivParams, DCacheParams, ICacheParams, TLBConfig}
 import freechips.rocketchip.util.{AsyncResetReg}
 
 import boom.common.{BoomTilesKey}
@@ -115,6 +115,41 @@ class WithMultiRoCCHwacha(harts: Int*) extends Config((site, here, up) => {
     }
   }
 })
+
+
+class WithMultiRoCCProtoAccelSerOnly(harts: Int*) extends Config(
+  new Config((site, here, up) => {
+    case protoacc.ProtoTLB => Some(TLBConfig(nEntries = 16))
+    case MultiRoCCKey => {
+      up(MultiRoCCKey, site) ++ harts.distinct.map{ i =>
+        (i -> Seq((p: Parameters) => {
+          val protoaccser = LazyModule.apply(new protoacc.ProtoAccelSerializer(OpcodeSet.custom3)(p))
+          protoaccser
+        }))
+      }
+    }
+  })
+)
+
+class WithMultiRoCCSha3Accel(harts: Int*) extends Config(
+  new Config((site, here, up) => {
+    case sha3.Sha3WidthP => 64
+    case sha3.Sha3Stages => 1
+    case sha3.Sha3FastMem => true
+    case sha3.Sha3BufferSram => false
+    case sha3.Sha3Keccak => false
+    case sha3.Sha3BlackBox => false
+    case sha3.Sha3TLB => Some(TLBConfig(nEntries = 4, nSectors = 1, nSuperpageEntries = 1))
+    case MultiRoCCKey => {
+      up(MultiRoCCKey, site) ++ harts.distinct.map{ i =>
+        (i -> Seq((p: Parameters) => {
+          val sha3m = LazyModule.apply(new sha3.Sha3Accel(OpcodeSet.custom2)(p))
+          sha3m
+        }))
+      }
+    }
+  })
+)
 
 
 /**

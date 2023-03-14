@@ -192,3 +192,31 @@ class FireSimProtoDeserMegaBoomConfig extends Config(
   new WithFireSimConfigTweaks ++
   new chipyard.ProtoDeserMegaBoomConfig)
 
+// ----------------------
+
+class FireSimProtoRocketConfig extends Config(
+  new WithDefaultFireSimBridges ++
+  new WithDefaultMemModel ++
+  new WithFireSimConfigTweaks ++
+  new chipyard.ProtoRocketConfig)
+
+class FireSimProtoShax3RocketConfig extends Config(
+  new WithDefaultFireSimBridges ++
+  new WithDefaultMemModel ++
+  new WithFireSimConfigTweaks ++
+  new chipyard.ProtoShax3RocketConfig)
+
+
+// ----------------------
+
+class FireSimISCAProtoRocketConfig extends Config(
+  new WithDefaultFireSimBridges ++
+  new WithDefaultMemModel ++
+  new WithFireSimConfigTweaks ++
+  new chipyard.ISCAProtoRocketConfig)
+
+class FireSimISCAProtoShax3RocketConfig extends Config(
+  new WithDefaultFireSimBridges ++
+  new WithDefaultMemModel ++
+  new WithFireSimConfigTweaks ++
+  new chipyard.ISCAProtoShax3RocketConfig)
